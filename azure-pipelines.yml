@@ -7,7 +7,7 @@ pool:
 steps:
 - task: SnykSecurityScan@1
   inputs:
-    serviceConnectionEndpoint: 'Snyk'
+    serviceConnectionEndpoint: 'snykoattacko'
     testType: 'code'
     codeSeverityThreshold: 'high'
     failOnIssues: false
