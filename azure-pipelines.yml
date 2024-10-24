@@ -86,6 +86,16 @@ steps:
   inputs:
     version: latest
     installerType: 'auto'
+
+- script: |
+    java -version
+  displayName: 'Check Java Version'
+
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: '17'
+    jdkArchitectureOption: 'x64'
+    
 - task: RunHawkScan@1
   inputs:
     configFile: "stackhawk.yml"
