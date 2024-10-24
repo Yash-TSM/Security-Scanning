@@ -74,6 +74,11 @@ steps:
 #       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
 #       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 - script: |
+    echo "PR Title: $(System.PullRequest.Title)"
+    echo "PR Author: $(System.PullRequest.CreatedBy.DisplayName)"
+  displayName: 'Debug PR Variables'
+
+- script: |
     PR_ID=$(System.PullRequest.PullRequestId)
     REPO_NAME=$(Build.Repository.Name)
     ORG_URL=$(System.CollectionUri)
@@ -88,8 +93,8 @@ steps:
           "facts": [
             {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
             {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
-            {"name": "👤 PR Author", "value": "'"$(System.PullRequest.CreatedBy.DisplayName)"'"},
-            {"name": "📝 PR Title", "value": "'"$(System.PullRequest.Title)"'"},
+            {"name": "👤 PR Author", "value": "$(System.PullRequest.CreatedBy.DisplayName)"},
+            {"name": "📝 PR Title", "value": "$(System.PullRequest.Title)"},
             {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
