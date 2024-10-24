@@ -62,18 +62,6 @@ steps:
     tags: '$(Build.BuildNumber)'
   displayName: 'Docker build'
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'snykoattacko'
-    testType: 'container'
-    dockerImageName: 'application321:$(Build.BuildNumber)'
-    dockerfilePath: '.'
-    monitorWhen: 'always'
-    failOnIssues: true
-    projectName: 'calculator-project/calculator-project'
-    organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
-
-
 - task: CmdLine@2
   displayName: Install Trivy
   inputs:
