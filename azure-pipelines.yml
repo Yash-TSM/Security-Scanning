@@ -1,8 +1,4 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
+Copy
 trigger:
 - master
 
@@ -19,6 +15,7 @@ steps:
     npm install
     npm run build
   displayName: 'npm install and build'
+
 - task: SonarCloudPrepare@3
   inputs:
     SonarCloud: 'sonar-connection'
@@ -29,6 +26,7 @@ steps:
     cliProjectKey: 'davidputra2812_calculator-project'
     cliProjectName: 'calculator-project'
     cliSources: '.'
+
 - task: SonarCloudAnalyze@3
 
 - task: SonarCloudPublish@3
@@ -55,13 +53,12 @@ steps:
       sudo mv trivy /usr/local/bin/
       trivy -v
 
-  # Trivy File System (Code) Scan
 - task: CmdLine@2
-  displayName: 'Run trivy scan on database image'
+  displayName: 'Run Trivy scan on database image'
   inputs:
     script: |
       wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
-      trivy image application321.azurecr.io/application321:$(Build.BuildNumber)  --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
+      trivy image application321.azurecr.io/application321:$(Build.BuildNumber) --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
 
 - task: PublishTestResults@2
   displayName: 'Publish Trivy App Image Scan Results'
@@ -78,6 +75,10 @@ steps:
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
-
-
-
+- script: |
+    if [ "$(System.JobStatus)" == "Succeeded" ]; then
+      curl -H 'Content-Type: application/json' -d '{
+        "text": "Build succeeded! 🎉\n* Build Number: $(Build.BuildNumber)\n* Commit ID: $(Build.SourceVersion)\n* PR Details: [PR Link](https://dev.azure.com/$(System.TeamProject)/_git/$(Build.Repository.Name)/pullrequest/$(System.PullRequest.PullRequestId))\n* Created By: $(System.PullRequest.CreatedBy)\n* Branch Name: $(System.PullRequest.SourceBranch)\n* Repository Name: $(Build.Repository.Name)"
+      }' https://stackmentalist.webhook.office.com/webhookb2/474048fb-8145-4bcb-8f65-579cfec74297@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/69f262c3bb734b68a28d9c705791c370/1108854b-158c-4e85-925b-24007110a374/V2yi40YmMB2r9UbPNmO6n_CunV2pnMbiYfc1PWzWdWKhM1%27
+    fi
+  displayName: 'Send Teams Notification'
