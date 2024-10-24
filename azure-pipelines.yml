@@ -41,7 +41,7 @@ steps:
     repository: 'application321'
     command: 'buildAndPush'
     Dockerfile: 'Dockerfile'
-    tag: '$(Build.BuildNumber)'
+    tags: '$(Build.BuildNumber)'
   displayName: 'Docker build'
 
 - task: CmdLine@2
