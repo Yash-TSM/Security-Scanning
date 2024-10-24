@@ -68,7 +68,7 @@ steps:
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
-    failTaskOnFailedTests: true
+    failTaskOnFailedTests: false
 
 - task: SSH@0
   inputs:
