@@ -75,11 +75,13 @@ steps:
     sshEndpoint: 'Deploymentmachine'
     runOptions: 'commands'
     commands: |
-          docker login application321.azurecr.io
-          docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
-          docker stop app_container || true  # Stop if running
-          docker rm app_container || true    # Remove if exists
-          docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
+      # Configure Docker to use the credential helper
+      echo '{ "credsStore": "pass" }' > ~/.docker/config.json
+      docker login application321.azurecr.io
+      docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+      docker stop app_container || true  # Stop if running
+      docker rm app_container || true    # Remove if exists
+      docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
 
 
