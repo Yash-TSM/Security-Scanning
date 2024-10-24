@@ -74,16 +74,18 @@ steps:
 #       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
 #       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 - script: |
-    echo "PR Title: $(System.PullRequest.Title)"
-    echo "PR Author: $(System.PullRequest.CreatedBy.DisplayName)"
-  displayName: 'Debug PR Variables'
-
-- script: |
     PR_ID=$(System.PullRequest.PullRequestId)
     REPO_NAME=$(Build.Repository.Name)
     ORG_URL=$(System.CollectionUri)
     BASE_URL="${ORG_URL}/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
-    
+
+    # Fetch PR details using the Azure DevOps REST API
+    PR_DETAILS=$(curl -s -u :$(System.AccessToken) \
+    "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Id)/pullRequests/$PR_ID?api-version=6.0")
+
+    PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
+    PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
+
     curl -H "Content-Type: application/json" -d '{
       "summary": "🎉 Build Success 🎉",
       "sections": [
@@ -93,8 +95,8 @@ steps:
           "facts": [
             {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
             {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
-            {"name": "👤 PR Author", "value": "$(System.PullRequest.CreatedBy.DisplayName)"},
-            {"name": "📝 PR Title", "value": "$(System.PullRequest.Title)"},
+            {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
+            {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
             {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
