@@ -76,7 +76,6 @@ steps:
     runOptions: 'commands'
     commands: |
       echo "$DOCKER_PASSWORD" | docker login application321.azurecr.io -u "$DOCKER_USERNAME" --password-stdin
-     # docker login application321.azurecr.io
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
       docker stop app_container || true  # Stop if running
       docker rm app_container || true    # Remove if exists
