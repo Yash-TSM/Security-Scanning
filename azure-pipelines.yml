@@ -24,7 +24,7 @@ steps:
     SonarCloud: 'sonar-connection'
     organization: 'demodevopsyl'
     scannerMode: 'cli'
-    cliScannerVersion: '6.2.1'
+    cliScannerVersion: '6.2.1.4610'
     configMode: 'manual'
     cliProjectKey: 'davidputra2812_calculator-project'
     cliProjectName: 'calculator-project'
