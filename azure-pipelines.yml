@@ -9,7 +9,7 @@ steps:
   inputs:
     serviceConnectionEndpoint: 'snykoattacko'
     testType: 'code'
-    codeSeverityThreshold: 'high'
+    codeSeverityThreshold: 'low'
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
