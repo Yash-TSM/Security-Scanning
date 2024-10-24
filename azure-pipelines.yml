@@ -5,6 +5,14 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: SnykSecurityScan@1
+  inputs:
+    serviceConnectionEndpoint: 'Snyk'
+    testType: 'code'
+    codeSeverityThreshold: 'high'
+    failOnIssues: false
+    projectName: 'Files/calculator-project'
+    organization: $(ORG)
 - task: NodeTool@0
   inputs:
     versionSpec: '20.x'
