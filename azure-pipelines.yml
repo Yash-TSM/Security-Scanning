@@ -41,38 +41,38 @@ steps:
 #     tags: '$(Build.BuildNumber)'
 #   displayName: 'Docker build'
 
-- task: CmdLine@2
-  displayName: Install Trivy
-  inputs:
-    script: |
-      TRIVY_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^v//')
-      wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      tar xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      rm trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      sudo mv trivy /usr/local/bin/
-      trivy -v
+# - task: CmdLine@2
+#   displayName: Install Trivy
+#   inputs:
+#     script: |
+#       TRIVY_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^v//')
+#       wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       tar xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       rm trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       sudo mv trivy /usr/local/bin/
+#       trivy -v
 
-- task: CmdLine@2
-  displayName: 'Run Trivy scan on database image'
-  inputs:
-    script: |
-      wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
-      trivy image application321.azurecr.io/application321:$(Build.BuildNumber) --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
+# - task: CmdLine@2
+#   displayName: 'Run Trivy scan on database image'
+#   inputs:
+#     script: |
+#       wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
+#       trivy image application321.azurecr.io/application321:$(Build.BuildNumber) --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
 
-- task: PublishTestResults@2
-  displayName: 'Publish Trivy App Image Scan Results'
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
-    failTaskOnFailedTests: false
+# - task: PublishTestResults@2
+#   displayName: 'Publish Trivy App Image Scan Results'
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
+#     failTaskOnFailedTests: false
 
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'deploy'
-    runOptions: 'commands'
-    commands: |
-      docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
-      docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'deploy'
+#     runOptions: 'commands'
+#     commands: |
+#       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+#       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
 - script: |
     if [ "$(System.JobStatus)" = "Succeeded" ]; then
