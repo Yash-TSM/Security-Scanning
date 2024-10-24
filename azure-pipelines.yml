@@ -76,8 +76,10 @@ steps:
     runOptions: 'commands'
     commands: |
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
-      docker stop app_container || true  # Stop if running
-      docker rm app_container || true    # Remove if exists
+      if [ $(docker ps -aq -f name=app_container) ]; then
+          docker stop app_container
+          docker rm app_container
+      fi
       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
 
