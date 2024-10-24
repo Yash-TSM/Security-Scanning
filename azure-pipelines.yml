@@ -11,7 +11,7 @@ steps:
     testType: 'code'
     codeSeverityThreshold: 'high'
     failOnIssues: false
-    projectName: 'Files/calculator-project'
+    projectName: 'pocyl/calculator-project'
     organization: $(ORG)
 - task: NodeTool@0
   inputs:
