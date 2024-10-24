@@ -10,72 +10,72 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+# - task: NodeTool@0
+#   inputs:
+#     versionSpec: '20.x'
+#   displayName: 'Install Node.js'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
-- task: SonarCloudPrepare@3
-  inputs:
-    SonarCloud: 'sonar-connection'
-    organization: 'demodevopsyl'
-    scannerMode: 'cli'
-    cliScannerVersion: '6.2.1.4610'
-    configMode: 'manual'
-    cliProjectKey: 'davidputra2812_calculator-project'
-    cliProjectName: 'calculator-project'
-    cliSources: '.'
-- task: SonarCloudAnalyze@3
+# - script: |
+#     npm install
+#     npm run build
+#   displayName: 'npm install and build'
+# - task: SonarCloudPrepare@3
+#   inputs:
+#     SonarCloud: 'sonar-connection'
+#     organization: 'demodevopsyl'
+#     scannerMode: 'cli'
+#     cliScannerVersion: '6.2.1.4610'
+#     configMode: 'manual'
+#     cliProjectKey: 'davidputra2812_calculator-project'
+#     cliProjectName: 'calculator-project'
+#     cliSources: '.'
+# - task: SonarCloudAnalyze@3
 
-- task: SonarCloudPublish@3
-  inputs:
-    pollingTimeoutSec: '300'
+# - task: SonarCloudPublish@3
+#   inputs:
+#     pollingTimeoutSec: '300'
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'docker'
-    repository: 'application321'
-    command: 'buildAndPush'
-    Dockerfile: 'Dockerfile'
-    tags: '$(Build.BuildNumber)'
-  displayName: 'Docker build'
+# - task: Docker@2
+#   inputs:
+#     containerRegistry: 'docker'
+#     repository: 'application321'
+#     command: 'buildAndPush'
+#     Dockerfile: 'Dockerfile'
+#     tags: '$(Build.BuildNumber)'
+#   displayName: 'Docker build'
 
-- task: CmdLine@2
-  displayName: Install Trivy
-  inputs:
-    script: |
-      TRIVY_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^v//')
-      wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      tar xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      rm trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
-      sudo mv trivy /usr/local/bin/
-      trivy -v
+# - task: CmdLine@2
+#   displayName: Install Trivy
+#   inputs:
+#     script: |
+#       TRIVY_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")' | sed 's/^v//')
+#       wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       tar xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       rm trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+#       sudo mv trivy /usr/local/bin/
+#       trivy -v
 
-  # Trivy File System (Code) Scan
-- task: CmdLine@2
-  displayName: 'Run trivy scan on database image'
-  inputs:
-    script: |
-      wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
-      trivy image application321.azurecr.io/application321:$(Build.BuildNumber)  --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
+#   # Trivy File System (Code) Scan
+# - task: CmdLine@2
+#   displayName: 'Run trivy scan on database image'
+#   inputs:
+#     script: |
+#       wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl -O junit.tpl
+#       trivy image application321.azurecr.io/application321:$(Build.BuildNumber)  --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" --format template --template "@./junit.tpl" --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml
 
-- task: PublishTestResults@2
-  displayName: 'Publish Trivy App Image Scan Results'
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
-    failTaskOnFailedTests: false
+# - task: PublishTestResults@2
+#   displayName: 'Publish Trivy App Image Scan Results'
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
+#     failTaskOnFailedTests: false
 
 - task: SSH@0
   inputs:
     sshEndpoint: 'Deploymentmachine'
     runOptions: 'commands'
     commands: |
-      docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+      docker pull application321.azurecr.io/application321:20241024.22
       docker stop app_container || true  # Stop if running
       docker rm app_container || true    # Remove if exists
       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
