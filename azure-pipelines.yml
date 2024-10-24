@@ -91,6 +91,6 @@ steps:
           "markdown": true
         }
       ]
-    }' https://stackmentalist.webhook.office.com/webhookb2/474048fb-8145-4bcb-8f65-579cfec74297@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/69f262c3bb734b68a28d9c705791c370/1108854b-158c-4e85-925b-24007110a374/V2yi40YmMB2r9UbPNmO6n_CunV2pnMbiYfc1PWzWdWKhM1%27
+    }' https://stackmentalist.webhook.office.com/webhookb2/2ee3bd96-57b4-4778-a17a-6f63c5297675@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/b613a217722f492ca72c55fedf8831af/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V2nFgW5s5OUl49eXOeAsS9hbYF4pwwGpHYlCqreB5VtNM1
   displayName: 'Send Teams Notification'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) 
