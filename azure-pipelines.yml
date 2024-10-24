@@ -76,7 +76,7 @@ steps:
 - script: |
     PR_ID=$(System.PullRequest.PullRequestId)
     REPO_NAME=$(Build.Repository.Name)
-    BASE_URL="https://dev.azure.com/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
+    BASE_URL="https://dev.azure.com/$(Organization)/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
     
     curl -H "Content-Type: application/json" -d '{
       "summary": "🎉 Build Success 🎉",
