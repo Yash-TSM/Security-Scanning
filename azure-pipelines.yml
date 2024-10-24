@@ -74,29 +74,23 @@ steps:
 #       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
 #       docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
-- task: HttpRequest@2
+- script: |
+    curl -H "Content-Type: application/json" -d '{
+      "summary": "🎉 Build Success 🎉",
+      "sections": [
+        {
+          "activityTitle": "✅ Build Successful for PR - Repository: $(Build.Repository.Name)",
+          "activitySubtitle": "🛠️ PR: $(System.PullRequest.PullRequestId) - $(System.PullRequest.SourceBranch)",
+          "facts": [
+            {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
+            {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
+            {"name": "👤 PR Author", "value": "$(System.PullRequest.Author.displayName)"},
+            {"name": "📝 PR Title", "value": "$(System.PullRequest.Title)"},
+            {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"}
+          ],
+          "markdown": true
+        }
+      ]
+    }' https://stackmentalist.webhook.office.com/webhookb2/474048fb-8145-4bcb-8f65-579cfec74297@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/69f262c3bb734b68a28d9c705791c370/1108854b-158c-4e85-925b-24007110a374/V2yi40YmMB2r9UbPNmO6n_CunV2pnMbiYfc1PWzWdWKhM1%27
   displayName: 'Send Teams Notification'
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))  # Send only for successful PR checks
-  inputs:
-    url: 'https://stackmentalist.webhook.office.com/webhookb2/474048fb-8145-4bcb-8f65-579cfec74297@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/69f262c3bb734b68a28d9c705791c370/1108854b-158c-4e85-925b-24007110a374/V2yi40YmMB2r9UbPNmO6n_CunV2pnMbiYfc1PWzWdWKhM1%27'
-    method: 'POST'
-    headers: |
-      Content-Type: application/json
-    body: |
-      {
-        "summary": "🎉 Build Success 🎉",
-        "sections": [
-          {
-            "activityTitle": "✅ Build Successful for PR - Repository: $(Build.Repository.Name)",
-            "activitySubtitle": "🛠️ PR: $(System.PullRequest.PullRequestId) - $(System.PullRequest.SourceBranch)",
-            "facts": [
-              {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
-              {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
-              {"name": "👤 PR Author", "value": "$(System.PullRequest.Author.displayName)"},
-              {"name": "📝 PR Title", "value": "$(System.PullRequest.Title)"},
-              {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"}
-            ],
-            "markdown": true
-          }
-        ]
-      }
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')) 
