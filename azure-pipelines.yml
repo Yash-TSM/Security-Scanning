@@ -14,15 +14,7 @@ steps:
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'snykoattacko'
-    testType: 'app'
-    targetFile: 'package.json'
-    monitorWhen: 'always'
-    failOnIssues: false
-    projectName: 'calculator-project/calculator-project'
-    organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+
 
 - task: NodeTool@0
   inputs:
@@ -33,6 +25,16 @@ steps:
     npm install
     npm run build
   displayName: 'npm install and build'
+
+- task: SnykSecurityScan@1
+  inputs:
+    serviceConnectionEndpoint: 'snykoattacko'
+    testType: 'app'
+    targetFile: 'package.json'
+    monitorWhen: 'always'
+    failOnIssues: false
+    projectName: 'calculator-project/calculator-project'
+    organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
 
 - task: SonarCloudPrepare@3
   inputs:
