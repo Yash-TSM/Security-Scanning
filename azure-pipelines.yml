@@ -70,6 +70,14 @@ steps:
 #     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
 #     failTaskOnFailedTests: false
 
+- task: AzureCLI@2
+  inputs:
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az acr login --name application321
+  displayName: 'Login to Azure Container Registry'
+
 - task: SSH@0
   inputs:
     sshEndpoint: 'Deploymentmachine'
