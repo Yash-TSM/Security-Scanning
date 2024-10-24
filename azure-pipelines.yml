@@ -75,9 +75,6 @@ steps:
     sshEndpoint: 'Deploymentmachine'
     runOptions: 'commands'
     commands: |
-      echo 'echo "$DOCKER_PASSWORD" | docker login application321.azurecr.io --username "$DOCKER_USERNAME" --password-stdin' > temp_script.sh
-      chmod +x temp_script.sh
-      ./temp_script.sh
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
       docker stop app_container || true  # Stop if running
       docker rm app_container || true    # Remove if exists
