@@ -11,8 +11,8 @@ steps:
     testType: 'code'
     codeSeverityThreshold: 'high'
     failOnIssues: false
-    projectName: 'pocyl/calculator-project'
-    organization: $(ORG)
+    projectName: 'pocyl'
+    organization: '7049f3b1-ae1a-426c-906d-72fce5514f84'
 - task: NodeTool@0
   inputs:
     versionSpec: '20.x'
