@@ -70,5 +70,16 @@ steps:
     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
     failTaskOnFailedTests: true
 
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'Deploymentmachine'
+    runOptions: 'commands'
+    commands: |
+          docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+          docker stop app_container || true  # Stop if running
+          docker rm app_container || true    # Remove if exists
+          docker run -d --name app_container -p 80:80 application321.azurecr.io/application321:$(Build.BuildNumber)
+
+
 
 
