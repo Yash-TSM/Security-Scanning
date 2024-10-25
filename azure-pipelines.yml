@@ -174,4 +174,4 @@ steps:
       ]
     }' https://stackmentalist.webhook.office.com/webhookb2/2ee3bd96-57b4-4778-a17a-6f63c5297675@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/b613a217722f492ca72c55fedf8831af/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V2nFgW5s5OUl49eXOeAsS9hbYF4pwwGpHYlCqreB5VtNM1
   displayName: 'Send Teams Notification with PR Details and Reports'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], PullRequest, 'refs/heads/master'))
