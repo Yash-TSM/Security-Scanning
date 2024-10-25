@@ -93,20 +93,6 @@ steps:
     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
     failTaskOnFailedTests: false
 
-- task: CmdLine@2
-  displayName: 'Run Trivy scan on Docker image'
-  inputs:
-    script: |
-      trivy image --format html --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html application321.azurecr.io/application321:$(Build.BuildNumber)
-
-# Publish Trivy Scan Results as Test Results (JUnit)
-- task: PublishTestResults@2
-  displayName: 'Publish Trivy App Image Scan Results'
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html'
-    failTaskOnFailedTests: false
-
 - task: SSH@0
   inputs:
     sshEndpoint: 'deploy'
