@@ -138,7 +138,6 @@ steps:
 
     SNYK_CODE_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-code-report.html"
     SNYK_APP_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-app-report.html"
-    TRIVY_REPORT_URL="$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html"
     SONAR_URL=$(SONAR_DASHBOARD_URL)
 
     curl -H "Content-Type: application/json" -d '{
@@ -162,13 +161,6 @@ steps:
           "facts": [
             {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
             {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
-          ],
-          "markdown": true
-        },
-        {
-          "activityTitle": "🐋 Trivy Docker Image Scan Report",
-          "facts": [
-            {"name": "Report", "value": "[View Trivy Report]('"$TRIVY_REPORT_URL"')"}
           ],
           "markdown": true
         },
