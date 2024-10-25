@@ -181,6 +181,6 @@ steps:
           "markdown": true
         }
       ]
-    }' https://stackmentalist.webhook.office.com/webhookb2/f4c00439-546a-4af6-8fd8-de9eed82e1fb@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/2dc499158f6b49a1b38947a7043d18bc/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/dgEd5XL5t2zI50H20zVFeO1a41B5bv1djHYklHsL7EJMT8b
+    }' https://stackmentalist.webhook.office.com/webhookb2/f4c00439-546a-4af6-8fd8-de9eed82e1fb@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/2dc499158f6b49a1b38947a7043d18bc/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V21LSqf_Y6clM_qb4vXoWMnPXaELXrWaDB88qDtCJKpgc1
   displayName: 'Send Teams Failure Notification'
   condition: failed()
