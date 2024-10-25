@@ -93,6 +93,13 @@ steps:
     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
     failTaskOnFailedTests: false
 
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'SnykReports'
+    publishLocation: 'Container'
+  displayName: 'Publish Snyk Reports as Artifacts'
+
 - task: SSH@0
   inputs:
     sshEndpoint: 'deploy'
@@ -115,7 +122,7 @@ steps:
     versionSpec: '17'
     jdkSourceOption: 'PreInstalled'
     jdkArchitectureOption: 'x64'
-    
+
 - task: RunHawkScan@1
   inputs:
     configFile: "stackhawk.yml"
@@ -129,15 +136,10 @@ steps:
     ORG_URL=$(System.CollectionUri)
     BASE_URL="${ORG_URL}/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
 
-    # Fetch PR details using the Azure DevOps REST API
-    PR_DETAILS=$(curl -s -u :$(System.AccessToken) \
-    "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Id)/pullRequests/$PR_ID?api-version=6.0")
-
-    PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
-    PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
-
-    SNYK_CODE_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-code-report.html"
-    SNYK_APP_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-app-report.html"
+    # Fetch artifact URL
+    ARTIFACT_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)/artifacts?artifactName=SnykReports&api-version=6.0"
+    SNYK_CODE_REPORT_URL="$ARTIFACT_URL/snyk-code-report.html"
+    SNYK_APP_REPORT_URL="$ARTIFACT_URL/snyk-app-report.html"
     SONAR_URL=$(SONAR_DASHBOARD_URL)
 
     curl -H "Content-Type: application/json" -d '{
