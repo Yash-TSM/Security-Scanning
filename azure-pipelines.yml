@@ -24,7 +24,11 @@ steps:
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+    reportFormat: 'html'
+    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-code-report.html'
+  displayName: 'Run Snyk Code Scan'
 
+# Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
   inputs:
     serviceConnectionEndpoint: 'snykoattacko'
@@ -34,6 +38,9 @@ steps:
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+    reportFormat: 'html'
+    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-app-report.html'
+  displayName: 'Run Snyk App Scan'
 
 - task: SonarCloudPrepare@3
   inputs:
@@ -86,6 +93,20 @@ steps:
     testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.xml'
     failTaskOnFailedTests: false
 
+- task: CmdLine@2
+  displayName: 'Run Trivy scan on Docker image'
+  inputs:
+    script: |
+      trivy image --format html --output $(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html application321.azurecr.io/application321:$(Build.BuildNumber)
+
+# Publish Trivy Scan Results as Test Results (JUnit)
+- task: PublishTestResults@2
+  displayName: 'Publish Trivy App Image Scan Results'
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html'
+    failTaskOnFailedTests: false
+
 - task: SSH@0
   inputs:
     sshEndpoint: 'deploy'
@@ -129,8 +150,13 @@ steps:
     PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
 
+    SNYK_CODE_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-code-report.html"
+    SNYK_APP_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-app-report.html"
+    TRIVY_REPORT_URL="$(Build.ArtifactStagingDirectory)/trivy-docker-image-report.html"
+    SONAR_URL=$(SONAR_DASHBOARD_URL)
+
     curl -H "Content-Type: application/json" -d '{
-      "summary": "🎉 Build Success 🎉",
+      "summary": "🎉 Build Success with Reports 🎉",
       "sections": [
         {
           "activityTitle": "✅ Build Successful for PR - Repository: '"$REPO_NAME"'",
@@ -144,8 +170,30 @@ steps:
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
           "markdown": true
+        },
+        {
+          "activityTitle": "🔒 Snyk Security Scan Reports",
+          "facts": [
+            {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
+            {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
+          ],
+          "markdown": true
+        },
+        {
+          "activityTitle": "🐋 Trivy Docker Image Scan Report",
+          "facts": [
+            {"name": "Report", "value": "[View Trivy Report]('"$TRIVY_REPORT_URL"')"}
+          ],
+          "markdown": true
+        },
+        {
+          "activityTitle": "📊 SonarCloud Code Quality Report",
+          "facts": [
+            {"name": "Dashboard", "value": "[View SonarCloud Dashboard]('"$SONAR_URL"')"}
+          ],
+          "markdown": true
         }
       ]
     }' https://stackmentalist.webhook.office.com/webhookb2/2ee3bd96-57b4-4778-a17a-6f63c5297675@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/b613a217722f492ca72c55fedf8831af/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V2nFgW5s5OUl49eXOeAsS9hbYF4pwwGpHYlCqreB5VtNM1
-  displayName: 'Send Teams Notification'
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  displayName: 'Send Teams Notification with PR Details and Reports'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
