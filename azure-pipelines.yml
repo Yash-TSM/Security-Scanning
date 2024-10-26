@@ -16,17 +16,6 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'snykoattacko'
-    testType: 'code'
-    codeSeverityThreshold: 'low'
-    failOnIssues: false
-    projectName: 'calculator-project/calculator-project'
-    organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
-    reportFormat: 'html'
-    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-code-report.html'
-  displayName: 'Run Snyk Code Scan'
 
 # Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
@@ -139,7 +128,6 @@ steps:
 
     # Fetch artifact URL
     ARTIFACT_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)/artifacts?artifactName=SnykReports&api-version=6.0"
-    SNYK_CODE_REPORT_URL="$ARTIFACT_URL/snyk-code-report.html"
     SNYK_APP_REPORT_URL="$ARTIFACT_URL/snyk-app-report.html"
     SONAR_URL=$(SONAR_DASHBOARD_URL)
 
@@ -162,7 +150,6 @@ steps:
         {
           "activityTitle": "🔒 Snyk Security Scan Reports",
           "facts": [
-            {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
             {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
           ],
           "markdown": true
@@ -205,7 +192,6 @@ steps:
         {
           "activityTitle": "🔒 Snyk Security Scan Reports",
           "facts": [
-            {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
             {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
           ],
           "markdown": true
