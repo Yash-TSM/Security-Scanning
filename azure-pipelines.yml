@@ -24,7 +24,11 @@ steps:
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+    reportFormat: 'html'
+    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-code-report.html'
+  displayName: 'Run Snyk Code Scan'
 
+# Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
   inputs:
     serviceConnectionEndpoint: 'snykoattacko'
@@ -34,6 +38,9 @@ steps:
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+    reportFormat: 'html'
+    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-app-report.html'
+  displayName: 'Run Snyk App Scan'
 
 - task: SonarCloudPrepare@3
   inputs:
