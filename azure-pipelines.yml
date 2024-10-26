@@ -129,6 +129,8 @@ steps:
 
     PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
+    SNYK_CODE_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-code-report.html"
+    SNYK_APP_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-app-report.html"
 
     curl -H "Content-Type: application/json" -d '{
       "summary": "🎉 Build Success 🎉",
@@ -143,6 +145,14 @@ steps:
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
             {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
+          ],
+          "markdown": true
+        }
+        {
+          "activityTitle": "🔒 Snyk Security Scan Reports",
+          "facts": [
+            {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
+            {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
           ],
           "markdown": true
         }
@@ -178,6 +188,14 @@ steps:
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
             {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
+          ],
+          "markdown": true
+        }
+        {
+          "activityTitle": "🔒 Snyk Security Scan Reports",
+          "facts": [
+            {"name": "Code Scan Report", "value": "[View Snyk Code Scan Report]('"$SNYK_CODE_REPORT_URL"')"},
+            {"name": "App Scan Report", "value": "[View Snyk App Scan Report]('"$SNYK_APP_REPORT_URL"')"}
           ],
           "markdown": true
         }
