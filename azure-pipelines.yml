@@ -16,15 +16,8 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
-- task: SnykSecurityScan@1
-  inputs:
-    serviceConnectionEndpoint: 'snykoattacko'
-    testType: 'code'
-    codeSeverityThreshold: 'low'
-    failOnIssues: false
-    projectName: 'calculator-project/calculator-project'
-    organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
 
+# Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
   inputs:
     serviceConnectionEndpoint: 'snykoattacko'
@@ -34,6 +27,9 @@ steps:
     failOnIssues: false
     projectName: 'calculator-project/calculator-project'
     organization: 'f6ff1f1e-b60e-43aa-91ab-fad13fbc3519'
+    reportFormat: 'html'
+    reportFile: '$(Build.ArtifactStagingDirectory)/snyk-app-report.html'
+  displayName: 'Run Snyk App Scan'
 
 - task: SonarCloudPrepare@3
   inputs:
@@ -92,6 +88,7 @@ steps:
     runOptions: 'commands'
     commands: |
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+      docker rm -f app_container || true
       docker run -d --name app_container -p 3000:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
 - task: HawkScanInstall@1
@@ -130,7 +127,7 @@ steps:
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
 
     curl -H "Content-Type: application/json" -d '{
-      "summary": "🎉 Build Success 🎉",
+      "summary": "🎉 Build Success with Reports 🎉",
       "sections": [
         {
           "activityTitle": "✅ Build Successful for PR - Repository: '"$REPO_NAME"'",
@@ -146,6 +143,41 @@ steps:
           "markdown": true
         }
       ]
-    }' https://stackmentalist.webhook.office.com/webhookb2/2ee3bd96-57b4-4778-a17a-6f63c5297675@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/b613a217722f492ca72c55fedf8831af/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V2nFgW5s5OUl49eXOeAsS9hbYF4pwwGpHYlCqreB5VtNM1
-  displayName: 'Send Teams Notification'
+    }' $(passwebhook)
+  displayName: 'Send Teams Notification with PR Details and Reports'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+
+# Notify on failure
+- script: |
+    PR_ID=$(System.PullRequest.PullRequestId)
+    REPO_NAME=$(Build.Repository.Name)
+    ORG_URL=$(System.CollectionUri)
+    BASE_URL="${ORG_URL}/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
+
+    # Fetch PR details using the Azure DevOps REST API
+    PR_DETAILS=$(curl -s -u :$(System.AccessToken) \
+    "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Id)/pullRequests/$PR_ID?api-version=6.0")
+
+    PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
+    PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
+
+    curl -H "Content-Type: application/json" -d '{
+      "summary": "🚨 Build Failed 🚨",
+      "sections": [
+        {
+          "activityTitle": "❌ Build Failed for PR - Repository: '"$REPO_NAME"'",
+          "activitySubtitle": "⚠️ PR: '"$PR_ID"' - '"$(System.PullRequest.SourceBranch)"'",
+          "facts": [
+            {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
+            {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
+            {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
+            {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
+            {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
+            {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
+          ],
+          "markdown": true
+        }
+      ]
+    }' $(webkhook)
+  displayName: 'Send Teams Failure Notification'
+  condition: failed()
