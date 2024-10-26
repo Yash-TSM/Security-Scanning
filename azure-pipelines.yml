@@ -126,9 +126,6 @@ steps:
     PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
 
-    # Fetch artifact URL
-    ARTIFACT_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)/artifacts?artifactName=SnykReports&api-version=6.0"
-    SNYK_APP_DOWNLOAD_URL="${ORG_URL}/${PROJECT_NAME}/_apis/build/builds/${BUILD_ID}/artifacts?artifactName=SnykReports&fileId=0&fileName=snyk-app-report.html&api-version=5.1&%24format=zip"
     curl -H "Content-Type: application/json" -d '{
       "summary": "🎉 Build Success with Reports 🎉",
       "sections": [
@@ -142,13 +139,6 @@ steps:
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
             {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
-          ],
-          "markdown": true
-        },
-        {
-          "activityTitle": "🔒 Snyk Security Scan Reports",
-          "facts": [
-            {"name": "App Scan Report", "value": "[Download Snyk App Report]('"$SNYK_APP_DOWNLOAD_URL"')"}
           ],
           "markdown": true
         }
@@ -170,7 +160,6 @@ steps:
 
     PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
-    SNYK_APP_DOWNLOAD_URL="${ORG_URL}/${PROJECT_NAME}/_apis/build/builds/${BUILD_ID}/artifacts?artifactName=SnykReports&fileId=0&fileName=snyk-app-report.html&api-version=5.1&%24format=zip"
 
     curl -H "Content-Type: application/json" -d '{
       "summary": "🚨 Build Failed 🚨",
@@ -185,13 +174,6 @@ steps:
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
             {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
-          ],
-          "markdown": true
-        },
-        {
-          "activityTitle": "🔒 Snyk Security Scan Reports",
-          "facts": [
-            {"name": "App Scan Report", "value": "[Download Snyk App Report]('"$SNYK_APP_DOWNLOAD_URL"')"}
           ],
           "markdown": true
         }
