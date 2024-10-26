@@ -129,11 +129,15 @@ steps:
 
     PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
     PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
-    SNYK_CODE_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-code-report.html"
-    SNYK_APP_REPORT_URL="$(Build.ArtifactStagingDirectory)/snyk-app-report.html"
+
+    # Fetch artifact URL
+    ARTIFACT_URL="$(System.CollectionUri)$(System.TeamProject)/_apis/build/builds/$(Build.BuildId)/artifacts?artifactName=SnykReports&api-version=6.0"
+    SNYK_CODE_REPORT_URL="$ARTIFACT_URL/snyk-code-report.html"
+    SNYK_APP_REPORT_URL="$ARTIFACT_URL/snyk-app-report.html"
+    SONAR_URL=$(SONAR_DASHBOARD_URL)
 
     curl -H "Content-Type: application/json" -d '{
-      "summary": "🎉 Build Success 🎉",
+      "summary": "🎉 Build Success with Reports 🎉",
       "sections": [
         {
           "activityTitle": "✅ Build Successful for PR - Repository: '"$REPO_NAME"'",
@@ -143,11 +147,11 @@ steps:
             {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
             {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
-            {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
+            {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
           "markdown": true
-        }
+        },
         {
           "activityTitle": "🔒 Snyk Security Scan Reports",
           "facts": [
@@ -158,7 +162,7 @@ steps:
         }
       ]
     }' https://stackmentalist.webhook.office.com/webhookb2/2ee3bd96-57b4-4778-a17a-6f63c5297675@634afd4b-c03a-4ec7-bcbb-88ea55db47ac/IncomingWebhook/b613a217722f492ca72c55fedf8831af/b1b7f6c5-ceb7-4e27-9bec-4e1d19020c53/V2nFgW5s5OUl49eXOeAsS9hbYF4pwwGpHYlCqreB5VtNM1
-  displayName: 'Send Teams Notification'
+  displayName: 'Send Teams Notification with PR Details and Reports'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
 
 # Notify on failure
@@ -190,7 +194,7 @@ steps:
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
           "markdown": true
-        }
+        },
         {
           "activityTitle": "🔒 Snyk Security Scan Reports",
           "facts": [
