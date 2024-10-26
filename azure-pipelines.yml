@@ -92,6 +92,7 @@ steps:
     runOptions: 'commands'
     commands: |
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
+      docker rm -f app_container || true
       docker run -d --name app_container -p 3000:80 application321.azurecr.io/application321:$(Build.BuildNumber)
 
 - task: HawkScanInstall@1
