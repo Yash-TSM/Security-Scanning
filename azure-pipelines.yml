@@ -140,7 +140,7 @@ steps:
             {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
             {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
-            {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
+            {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
           "markdown": true
