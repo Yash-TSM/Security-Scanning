@@ -16,6 +16,9 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
+- script: |
+    echo "This is a placeholder step; no changes are made."
+  displayName: 'No-op step'
 
 # Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
