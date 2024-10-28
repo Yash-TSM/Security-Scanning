@@ -184,3 +184,37 @@ steps:
     }' $(webkhook)
   displayName: 'Send Teams Failure Notification'
   condition: failed()
+
+- script: |
+    PR_ID=$(System.PullRequest.PullRequestId)
+    REPO_NAME=$(Build.Repository.Name)
+    ORG_URL=$(System.CollectionUri)
+    BASE_URL="${ORG_URL}/$(System.TeamProject)/_git/$REPO_NAME/pullrequest/$PR_ID"
+
+    # Fetch PR details using the Azure DevOps REST API
+    PR_DETAILS=$(curl -s -u :$(System.AccessToken) \
+    "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Id)/pullRequests/$PR_ID?api-version=6.0")
+
+    PR_TITLE=$(echo $PR_DETAILS | jq -r .title)
+    PR_AUTHOR=$(echo $PR_DETAILS | jq -r .createdBy.displayName)
+
+    curl -H "Content-Type: application/json" -d '{
+      "summary": "🎉 PR Merged Successfully 🎉",
+      "sections": [
+        {
+          "activityTitle": "✅ PR Merged for Repository: '"$REPO_NAME"'",
+          "activitySubtitle": "🛠️ PR: '"$PR_ID"' - '"$(System.PullRequest.SourceBranch)"'",
+          "facts": [
+            {"name": "🆔 Build Number", "value": "$(Build.BuildNumber)"},
+            {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
+            {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
+            {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
+            {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
+            {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
+          ],
+          "markdown": true
+        }
+      ]
+    }' $(passwebhook)
+  displayName: 'Send Teams Notification on PR Merge'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.PullRequest.MergeStatus'], 'completed'))
