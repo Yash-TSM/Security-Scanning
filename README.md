@@ -30,8 +30,6 @@ Go to [http://localhost](http://localhost)
 
 ## Running the tests
 
-#Hrllo Worl
-
 TBD
 
 ### Break down into end to end tests
