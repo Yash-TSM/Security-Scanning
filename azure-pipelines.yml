@@ -155,11 +155,13 @@ steps:
       docker pull application321.azurecr.io/application321:$(Build.BuildNumber)
       docker rm -f app_container || true
       docker run -d --name app_container -p 3000:80 application321.azurecr.io/application321:$(Build.BuildNumber)
+  condition: eq(variables['Build.Reason'], 'PullRequest')
 
 - task: HawkScanInstall@1
   inputs:
     version: latest
     installerType: 'auto'
+  condition: eq(variables['Build.Reason'], 'PullRequest')
 
 - script: |
     java -version
@@ -177,6 +179,7 @@ steps:
     version: "latest"
   env:
     HAWK_API_KEY: $(hawk_api_key)
+  condition: eq(variables['Build.Reason'], 'PullRequest')
 
 - script: |
     PR_ID=$(System.PullRequest.PullRequestId)
