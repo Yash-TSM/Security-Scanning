@@ -1,6 +1,7 @@
 trigger:
 - master
 
+
 pool:
   vmImage: ubuntu-latest
 
@@ -16,9 +17,11 @@ steps:
     npm run build
   displayName: 'npm install and build'
 
+
 - script: |
-    echo "This is a placeholder step; no changes are made."
-  displayName: 'No-op step'
+    echo "Available Variables:"
+    printenv
+  displayName: 'Debug Variables'
 
 # Snyk Security Scan for Application Dependencies
 - task: SnykSecurityScan@1
@@ -59,6 +62,65 @@ steps:
     Dockerfile: 'Dockerfile'
     tags: '$(Build.BuildNumber)'
   displayName: 'Docker build'
+
+# New step to update the image tag in app-info.yaml
+- script: |
+    echo "Retrieving the SHA of the newly pushed image..."
+
+    # Get the SHA of the last pushed image
+    image_sha=$(docker inspect --format='{{index .RepoDigests 0}}' application321.azurecr.io/application321:$(Build.BuildNumber) | cut -d'@' -f2)
+    
+    if [ -z "$image_sha" ]; then
+      echo "Error: Unable to retrieve the SHA for the image."
+      exit 1
+    fi
+
+    echo "Latest image SHA: ${image_sha}"
+
+    echo "Starting update of image tag in GitOps repository deployment.yaml"
+
+    # Clone the GitOps repository
+    git clone https://$(AccessToken)@dev.azure.com/davidputra2812/calculator-project/_git/GitOps
+    cd GitOps
+    git checkout maain
+
+    # Verify that the target deployment.yaml file exists
+    if [ ! -f demo/deployment.yaml ]; then
+      echo "Error: demo/deployment.yaml does not exist in the GitOps repository."
+      exit 1
+    fi
+
+    echo "Contents of deployment.yaml before update:"
+    cat demo/deployment.yaml
+
+    # Update the image tag in the GitOps deployment.yaml with the latest SHA from the image
+    sed -i "s|image: application321.azurecr.io/application321@.*|image: application321.azurecr.io/application321@${image_sha}|" demo/deployment.yaml
+
+    echo "Contents of deployment.yaml after update:"
+    cat crm_backend/deployment.yaml
+
+    echo "Updated crm_backend/deployment.yaml in GitOps repository with new image tag using SHA: ${image_sha}"
+
+    # Set up Git configuration
+    git config --global user.email "davidputra2812@gmail.com"
+    git config --global user.name "davidputra2812"
+
+
+
+    # Stage and attempt to commit changes
+    git add crm_backend/deployment.yaml
+    if git diff --cached --quiet; then
+      echo "No changes to commit in GitOps repository."
+    else
+      git commit -m "Update image tag to ${image_sha} from crm_backend"
+      echo "Changes committed in GitOps repository."
+
+      # Push the changes to the correct branch in GitOps
+      git push origin main
+    fi
+  displayName: 'Update image tag in GitOps deployment.yaml and push changes'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
 
 - task: CmdLine@2
   displayName: Install Trivy
@@ -140,7 +202,7 @@ steps:
             {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
             {"name": "👤 PR Author", "value": "'"$PR_AUTHOR"'"},
             {"name": "📝 PR Title", "value": "'"$PR_TITLE"'"},
-            {"name": "🌿 Branch Name", "value": "$(System.PullRequest.SourceBranch)"},
+            {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
             {"name": "🔗 PR Link", "value": "'"$BASE_URL"'"}
           ],
           "markdown": true
@@ -185,6 +247,7 @@ steps:
   displayName: 'Send Teams Failure Notification'
   condition: failed()
 
+
 - script: |
     PR_ID=$(System.PullRequest.PullRequestId)
     REPO_NAME=$(Build.Repository.Name)
@@ -218,3 +281,26 @@ steps:
     }' $(passwebhook)
   displayName: 'Send Teams Notification on PR Merge'
   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.PullRequest.MergeStatus'], 'completed'))
+
+# Step to send notification on successful build (for normal builds)
+- script: |
+    REPO_NAME=$(Build.Repository.Name)
+    ORG_URL=$(System.CollectionUri)
+
+    curl -H "Content-Type: application/json" -d '{
+      "summary": "🎉 Build Completed Successfully 🎉",
+      "sections": [
+        {
+          "activityTitle": "✅ Build Successful for Repository: '"$REPO_NAME"'",
+          "activitySubtitle": "🌟 Build Number: $(Build.BuildNumber)",
+          "facts": [
+            {"name": "🔧 Commit ID", "value": "$(Build.SourceVersion)"},
+            {"name": "🌿 Branch Name", "value": "$(Build.SourceBranch)"},
+            {"name": "🔗 Build Link", "value": "'"$ORG_URL/$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"'"}
+          ],
+          "markdown": true
+        }
+      ]
+    }' $(passwebhook)
+  displayName: 'Send Teams Notification for Normal Builds'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
