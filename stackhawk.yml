@@ -3,4 +3,6 @@ app:
   host: https://demo.cloudnexus.site
   env: Development
 
-password: ysheuuhehs
+database:
+  type: mongodb
+  uri: 'mongodb+srv://vicky:stackmentalist@cluster0.qu0vs.mongodb.net/crm?retryWrites=true&w=majority&appName=Cluster0'
